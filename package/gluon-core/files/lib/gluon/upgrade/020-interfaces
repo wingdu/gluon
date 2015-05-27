@@ -1,5 +1,6 @@
 #!/usr/bin/lua
 
+local site = require 'gluon.site_config'
 local sysconfig = require 'gluon.sysconfig'
 local gluon_util = require 'gluon.util'
 local platform = require 'gluon.platform'
@@ -20,11 +21,24 @@ if not (sysconfig.lan_ifname or sysconfig.wan_ifname) then
     lan_ifname, wan_ifname = wan_ifname, lan_ifname
   end
 
-  if wan_ifname and iface_exists(wan_ifname) then
-    sysconfig.wan_ifname = wan_ifname
-    sysconfig.lan_ifname = lan_ifname
+  local has_wan = wan_ifname and iface_exists(wan_ifname)
+  local has_lan = lan_ifname and iface_exists(lan_ifname)
+
+  if has_wan then
+    if has_lan then
+      sysconfig.wan_ifname = wan_ifname
+      sysconfig.lan_ifname = lan_ifname
+    elseif site.single_as_lan then
+      sysconfig.lan_ifname = wan_ifname
+    else
+      sysconfig.wan_ifname = wan_ifname
+    end
   else
-    sysconfig.wan_ifname = lan_ifname
+    if site.single_as_lan then
+      sysconfig.lan_ifname = lan_ifname
+    else
+      sysconfig.wan_ifname = lan_ifname
+    end
   end
 
 

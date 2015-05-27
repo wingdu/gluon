@@ -8,3 +8,5 @@ need_string_array('ntp_servers', false)
 
 need_string_match('prefix4', '^%d+.%d+.%d+.%d+/%d+$')
 need_string_match('prefix6', '^[%x:]+/%d+$')
+
+need_boolean('single_as_lan', false)
