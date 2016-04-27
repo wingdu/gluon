@@ -44,8 +44,8 @@ local function configure_ibss(config, radio, index, suffix, disabled)
       uci:section('network', 'interface', name .. '_vlan',
         {
           ifname = '@' .. name .. '.' .. config.vlan,
-          proto = 'batadv',
-          mesh = 'bat0',
+          proto = 'none',
+          auto = 1,
         }
       )
 
@@ -53,8 +53,8 @@ local function configure_ibss(config, radio, index, suffix, disabled)
     else
       uci:section('network', 'interface', name,
         {
-          proto = 'batadv',
-          mesh = 'bat0',
+          proto = 'none',
+          auto = 1,
         }
       )
 
@@ -91,8 +91,8 @@ local function configure_mesh(config, radio, index, suffix, disabled)
   if config and macaddr then
     uci:section('network', 'interface', name,
       {
-        proto = 'batadv',
-        mesh = 'bat0',
+        proto = 'none',
+        auto = 1,
       }
     )
 
