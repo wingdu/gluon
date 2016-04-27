@@ -1,5 +1,6 @@
 #!/usr/bin/lua
 
+local mesh = require 'gluon.mesh'
 local site = require 'gluon.site_config'
 local util = require 'gluon.util'
 
@@ -24,6 +25,7 @@ end
 
 local function configure_ibss(config, radio, index, suffix, disabled)
   local name = 'ibss_' .. radio
+  local ifname = 'ibss' .. suffix
 
   uci:delete('network', name)
   uci:delete('network', name .. '_vlan')
@@ -46,6 +48,8 @@ local function configure_ibss(config, radio, index, suffix, disabled)
           mesh = 'bat0',
         }
       )
+
+      mesh.register_interface(ifname .. '.' .. config.vlan)
     else
       uci:section('network', 'interface', name,
         {
@@ -53,6 +57,8 @@ local function configure_ibss(config, radio, index, suffix, disabled)
           mesh = 'bat0',
         }
       )
+
+      mesh.register_interface(ifname)
     end
 
     uci:section('wireless', 'wifi-iface', name,
@@ -64,7 +70,7 @@ local function configure_ibss(config, radio, index, suffix, disabled)
         bssid = config.bssid,
         macaddr = macaddr,
         mcast_rate = config.mcast_rate,
-        ifname = suffix and 'ibss' .. suffix,
+        ifname = ifname,
         disabled = disabled and 1 or 0,
       }
     )
@@ -73,6 +79,7 @@ end
 
 local function configure_mesh(config, radio, index, suffix, disabled)
   local name = 'mesh_' .. radio
+  local ifname = 'mesh' .. suffix
   local macfilter = uci:get('wireless', name, 'macfilter')
   local maclist = uci:get('wireless', name, 'maclist')
 
@@ -89,6 +96,8 @@ local function configure_mesh(config, radio, index, suffix, disabled)
       }
     )
 
+    mesh.register_interface(ifname)
+
     uci:section('wireless', 'wifi-iface', name,
       {
         device = radio,
@@ -98,7 +107,7 @@ local function configure_mesh(config, radio, index, suffix, disabled)
         mesh_fwding = 0,
         macaddr = macaddr,
         mcast_rate = config.mcast_rate,
-        ifname = suffix and 'mesh' .. suffix,
+        ifname = ifname,
         disabled = disabled and 1 or 0,
         macfilter = macfilter,
         maclist = maclist,
@@ -109,6 +118,9 @@ end
 
 local function configure_radio(radio, index, config)
   local suffix = radio:match('^radio(%d+)$')
+  if not suffix then
+    return
+  end
 
   local ibss_disabled = is_disabled('ibss_' .. radio)
   local mesh_disabled = is_disabled('mesh_' .. radio)
